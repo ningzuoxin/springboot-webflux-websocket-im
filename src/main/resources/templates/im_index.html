@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎进入聊天室~</title>
+</head>
+<style>
+    .chat-room-box {
+        width: 480px;
+        height: 520px;
+        margin: 0 auto;
+        border: 1px solid #000000;
+        background-color: #cccccc;
+    }
+
+    .chat-content-box {
+        height: 75%;
+        border-bottom: 1px solid #000000;
+        overflow-y: scroll;
+    }
+
+    .chat-send-box-content {
+        width: 99%;
+        height: 90px;
+    }
+
+    .chat-content-box-child-left {
+        height: 30px;
+        width: 98%;
+        margin: 0 auto;
+    }
+
+    .chat-content-box-child-right {
+        height: 30px;
+        width: 98%;
+        margin: 5px auto 0;
+        text-align: right;
+    }
+
+    .chat-content-box-child-content {
+        background-color: #fff;
+        border-radius: 2px;
+        padding: 1px 5px;
+    }
+
+    .chat-content-box-child-user-left {
+        font-size: xx-small;
+        margin-right: 5px;
+    }
+
+    .chat-content-box-child-user-right {
+        font-size: xx-small;
+        margin-left: 5px;
+    }
+
+</style>
+<body>
+<h1>ID：[[${id}]]</th:text></h1>
+<div class="chat-room-box">
+    <div class="chat-content-box" id="chat-content-box-1024">
+
+    </div>
+    <div class="chat-send-box">
+        <textarea class="chat-send-box-content" id="chat-content">
+
+        </textarea>
+        <button class="chat-send-box-button" onclick="send();">发送信息</button>
+    </div>
+</div>
+
+</body>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script crossorigin="anonymous"
+        integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+        src="https://lib.baomitu.com/jquery/3.5.1/jquery.min.js"></script>
+<script language="javascript" type="text/javascript">
+
+    // im 通讯地址
+    var imPath = '';
+    // im token
+    var imToken = '';
+    // websocket
+    var ws;
+
+    var id = '[[${id}]]'
+    var nonce = '[[${nonce}]]'
+    var authorizationStr = '[[${authorization}]]'
+
+    function doSend(message) {
+        ws.send(message);
+    }
+
+    window.onload = function () {
+
+        console.log("id,nonce,authorizationStr", id, nonce, authorizationStr);
+
+        // authorization(authorizationStr, nonce, id).then(res => {
+        //     imPath = res.info.addr;
+        //     imToken = res.info.token;
+        // });
+
+        // console.log("ret", imPath);
+        // console.log("ret", ret.info.addr, ret.info.token);
+
+        authorizationAjax(authorizationStr, id, nonce);
+        console.log("imPath,imToken", imToken, imPath);
+
+        initWebSocket();
+    }
+
+    /**
+     * ws认证，获取ws通信地址
+     *
+     * @param authorization
+     * @param deviceId
+     * @param nonce
+     */
+    function authorization(authorization, deviceId, nonce) {
+        return new Promise((resolve, reject) => {
+            axios.get('/sloth/im/access',
+                {
+                    headers: {
+                        'Authorization': 'IM ' + authorization
+                    },
+                    params: {
+                        "u": deviceId,
+                        "n": nonce
+                    }
+                }
+            )
+                .then(
+                    res => {
+                        resolve(res.data)
+                    },
+                    err => {
+                        reject(err.data)
+                    }
+                )
+                .catch(err => {
+                    reject(err.data || err)
+                })
+        })
+    }
+
+    function initWebSocket() {
+        ws = new WebSocket(imPath + "?id=" + id + "&token=" + imToken);
+        ws.onopen = function (evt) {
+            console.log("websocket onopen")
+        };
+        ws.onclose = function (evt) {
+            console.log("websocket onclose")
+        };
+        ws.onmessage = function (evt) {
+            showLeft(evt.data)
+        };
+        ws.onerror = function (evt) {
+            console.log("websocket onerror")
+        };
+    }
+
+    // jquery 同步方法获取 imPath 和 imToken
+    function authorizationAjax(authorization, deviceId, nonce) {
+        $.ajax({
+            url: '/sloth/im/access',
+            type: "get",
+            cache: false,
+            async: false,
+            data: {
+                "u": deviceId,
+                "n": nonce
+            },
+            beforeSend: function (XMLHttpRequest) {
+                XMLHttpRequest.setRequestHeader("Authorization", 'IM ' + authorization);
+            },
+            success: function (result) {
+                // console.log(result);
+                imPath = result.info.addr;
+                imToken = result.info.token;
+            }
+        });
+    }
+
+    /**
+     * 产生随机字符串
+     * @returns {string}
+     */
+    function createNonce() {
+        var s = [];
+        var hexDigits = "0123456789abcdef";
+
+        for (var i = 0; i < 36; i++) {
+            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+        }
+        s[14] = "4";
+        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
+        s[8] = s[13] = s[18] = s[23] = "-";
+
+        var uuid = s.join("");
+        return uuid;
+    }
+
+    function send() {
+        var content = $("#chat-content").val();
+        content = content.trim();
+        if (content != null && content != '') {
+            doSend(content);
+            showRight(content);
+            $("#chat-content").val('');
+        } else {
+            alert("聊天内容不能为空！")
+        }
+    }
+
+    function showLeft(content) {
+        $("#chat-content-box-1024").append("<div class='chat-content-box-child-left'><span class='chat-content-box-child-user-left'>群友</span><span class='chat-content-box-child-content'>" + content + "</span></div>")
+    }
+
+    function showRight(content) {
+        $("#chat-content-box-1024").append("<div class='chat-content-box-child-right'><span class='chat-content-box-child-content'>" + content + "</span><span class='chat-content-box-child-user-right'>我</span></div>")
+    }
+
+</script>
+</html>

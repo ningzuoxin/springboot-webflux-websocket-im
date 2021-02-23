@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package ServiceMessage.proto;
+
+import "ClientMessage.proto";
+
+option java_package = "com.ning.message";
+option java_outer_classname = "ServiceMessage";
+
+message SrvMessage {
+  uint64 timestamp = 1;
+  string mg = 2;
+  string to = 3;
+  string from = 4;
+  bool group = 5;
+  uint32 p = 6;
+  ClientMessage.proto.Message client = 7;
+}

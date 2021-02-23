@@ -1,0 +1,4 @@
+一、protobuf使用注意事项。
+1）在main目录下新建proto目录。
+2）将resources目录下的xxx.protoc文件拷贝到新建的proto目录。
+3）执行mvn package命令。
