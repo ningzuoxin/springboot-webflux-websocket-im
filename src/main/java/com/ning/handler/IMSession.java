@@ -77,7 +77,7 @@ public class IMSession {
                         if (env.equals("dev") || env.equals("test")) {
                             // Echo Test
                             sendTestMessageToAllOnlineClient(message.getPayloadAsText());
-                            // sendTestMessageToClient("服务端回复：" + message.getPayloadAsText());
+                            // sendTestMessageToClient(message.getPayloadAsText());
                             // sendMessageToClient(message.getPayloadAsText(), -1);
                         } else {
                             closeMe(CloseStatus.BAD_DATA.withReason("not accept text message"));

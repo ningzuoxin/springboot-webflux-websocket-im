@@ -9,29 +9,34 @@
         width: 480px;
         height: 520px;
         margin: 0 auto;
-        border: 1px solid #000000;
-        background-color: #cccccc;
+        border: 2px solid #efefef;
+        background-color: #f1f1f1;
+        border-radius: 5px;
     }
 
     .chat-content-box {
         height: 75%;
-        border-bottom: 1px solid #000000;
+        border-bottom: 1px solid #efefef;
         overflow-y: scroll;
     }
 
     .chat-send-box-content {
         width: 99%;
         height: 90px;
+        border-radius: 5px;
+        border: 1px solid #efefef;
     }
 
     .chat-content-box-child-left {
-        height: 30px;
+        height: 36px;
+        line-height: 36px;
         width: 98%;
-        margin: 0 auto;
+        margin: 5px auto 0;
     }
 
     .chat-content-box-child-right {
-        height: 30px;
+        height: 36px;
+        line-height: 36px;
         width: 98%;
         margin: 5px auto 0;
         text-align: right;
@@ -39,8 +44,12 @@
 
     .chat-content-box-child-content {
         background-color: #fff;
-        border-radius: 2px;
-        padding: 1px 5px;
+        border-radius: 5px;
+        padding: 5px 5px;
+    }
+
+    .chat-send-box-button {
+        margin-left: 90%;
     }
 
     .chat-content-box-child-user-left {
@@ -55,16 +64,16 @@
 
 </style>
 <body>
-<h1>ID：[[${id}]]</th:text></h1>
+<h1>你的聊天室ID：[[${id}]]</h1>
 <div class="chat-room-box">
     <div class="chat-content-box" id="chat-content-box-1024">
 
     </div>
     <div class="chat-send-box">
-        <textarea class="chat-send-box-content" id="chat-content">
+        <textarea class="chat-send-box-content" style="resize: none;" id="chat-content" autofocus="autofocus">
 
         </textarea>
-        <button class="chat-send-box-button" onclick="send();">发送信息</button>
+        <button class="chat-send-box-button" onclick="send();" id="sendButton">发送</button>
     </div>
 </div>
 
@@ -89,6 +98,12 @@
     function doSend(message) {
         ws.send(message);
     }
+
+    $("body").keydown(function () {
+        if (event.keyCode == "13") {   // keyCode=13是回车键
+            $("#sendButton").click();  // 换成按钮的id即可
+        }
+    });
 
     window.onload = function () {
 
@@ -203,7 +218,7 @@
         var content = $("#chat-content").val();
         content = content.trim();
         if (content != null && content != '') {
-            doSend(content);
+            doSend(id + "@" + content);
             showRight(content);
             $("#chat-content").val('');
         } else {
@@ -212,7 +227,8 @@
     }
 
     function showLeft(content) {
-        $("#chat-content-box-1024").append("<div class='chat-content-box-child-left'><span class='chat-content-box-child-user-left'>群友</span><span class='chat-content-box-child-content'>" + content + "</span></div>")
+        var arr = content.split("@");
+        $("#chat-content-box-1024").append("<div class='chat-content-box-child-left'><span class='chat-content-box-child-user-left'>" + arr[0] + "</span><span class='chat-content-box-child-content'>" + arr[1] + "</span></div>")
     }
 
     function showRight(content) {
