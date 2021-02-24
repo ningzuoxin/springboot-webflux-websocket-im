@@ -1,6 +1,9 @@
 package com.ning.controller;
 
 import com.ning.common.RedisKey;
+import com.ning.model.JsonResponse;
+import com.ning.repo.ClientInfo;
+import com.ning.repo.OnlineRepo;
 import com.ning.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
@@ -13,7 +16,9 @@ import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -21,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Controller
@@ -29,6 +35,8 @@ public class ImController {
 
     @Autowired
     RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    OnlineRepo onlineRepo;
 
     @GetMapping(value = {"/", "index"})
     public String index(ServerWebExchange exchange, final Model model) {
@@ -53,6 +61,13 @@ public class ImController {
         model.addAttribute("authorization", authorization);
         log.info("ImController # index ip={},id={},nonce={},authorization={}", ip, id, nonce, authorization);
         return "im_index";
+    }
+
+    @ResponseBody
+    @GetMapping(value = "/online")
+    public Mono<JsonResponse> getOnlineClients() {
+        List<ClientInfo> clients = onlineRepo.findTerminalClients("0");
+        return Mono.just(JsonResponse.success().addInfo(clients));
     }
 
     private String digestAuthorization(String id, String nonce) {

@@ -65,6 +65,12 @@
 </style>
 <body>
 <h1>你的聊天室ID：[[${id}]]</h1>
+<div style="float: left;">
+    <h4>在线群友</h4>
+    <ul id="onlineChats">
+
+    </ul>
+</div>
 <div class="chat-room-box">
     <div class="chat-content-box" id="chat-content-box-1024">
 
@@ -121,6 +127,9 @@
         console.log("imPath,imToken", imToken, imPath);
 
         initWebSocket();
+
+        // 获取在线聊天室成员列表
+        getOnlineClient();
     }
 
     /**
@@ -233,6 +242,25 @@
 
     function showRight(content) {
         $("#chat-content-box-1024").append("<div class='chat-content-box-child-right'><span class='chat-content-box-child-content'>" + content + "</span><span class='chat-content-box-child-user-right'>我</span></div>")
+    }
+
+    function getOnlineClient() {
+        setInterval(function () {
+            $.ajax({
+                url: '/im/online',
+                type: "get",
+                success: function (result) {
+                    // console.log(result);
+                    $("#onlineChats").empty();
+                    var clients = result.info;
+                    var htmlStr = "";
+                    for (var i = 0; i < clients.length; i++) {
+                        htmlStr += "<li>" + clients[i].deviceId + "</li>";
+                    }
+                    $("#onlineChats").append(htmlStr);
+                }
+            });
+        }, 10000)
     }
 
 </script>

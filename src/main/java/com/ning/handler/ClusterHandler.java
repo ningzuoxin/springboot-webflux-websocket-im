@@ -39,7 +39,7 @@ public class ClusterHandler {
     SubscribeRepo subscribeRepo;
 
     private final static String IM_URL = "123.207.93.191:8081";
-    // private final static String IM_URL = "localhost:8081";
+//    private final static String IM_URL = "localhost:8081";
 
     @Autowired
     ClusterHandler(OnlineRepo onlineRepo, SubscribeRepo subscribeRepo, RedisTemplate<String, String> redisTemplate) {
