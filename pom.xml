@@ -113,6 +113,14 @@
                 </includes>
                 <targetPath>${project.build.directory}/conf</targetPath>
             </resource>
+            <resource>
+                <directory>src/main/resources/META-INF/assembly/bin</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/*.sh</include>
+                </includes>
+                <targetPath>${project.build.directory}/bin</targetPath>
+            </resource>
         </resources>
         <extensions>
             <extension>
@@ -177,29 +185,6 @@
                 <configuration>
                     <fork>true</fork>
                 </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>com.foundersc.itc</groupId>
-                                    <artifactId>itc-common</artifactId>
-                                    <version>0.0.1-SNAPSHOT</version>
-                                    <outputDirectory>${project.build.directory}/app</outputDirectory>
-                                    <includes>bin/**</includes>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
