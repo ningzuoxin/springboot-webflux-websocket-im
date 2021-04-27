@@ -2,3 +2,7 @@
 1）在main目录下新建proto目录。
 2）将resources目录下的xxx.protoc文件拷贝到新建的proto目录。
 3）执行mvn package命令。
+
+参考资料：
+webflux的websocket连接与生命周期
+https://blog.csdn.net/sinat_39291367/article/details/89467555
