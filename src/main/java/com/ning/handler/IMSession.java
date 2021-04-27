@@ -28,7 +28,7 @@ public class IMSession {
 
     private final OnlineRepo onlineRepo;
     private final WebSocketSession session;
-    private final int bufferSize = 10;
+    private final int bufferSize = 100;
     private final EmitterProcessor<WebSocketMessage> emitterProcessor = EmitterProcessor.create(bufferSize);
 
     private final String env;
@@ -72,7 +72,14 @@ public class IMSession {
         isConnected.set(true);
         Flux<WebSocketMessage> outSource = emitterProcessor.map(data -> data);
         Mono<Void> input = session.receive()
+                .doOnSubscribe(s -> {
+                    log.info("IMSession # create doOnSubscribe={}", s);
+                })
+                .doOnRequest(r -> {
+                    log.info("IMSession # create doOnRequest");
+                })
                 .doOnNext(message -> {
+                    log.info("IMSession # create doOnNext={}", message);
                     if (message.getType() == WebSocketMessage.Type.TEXT) {
                         if (env.equals("dev") || env.equals("test")) {
                             // Echo Test
@@ -118,15 +125,15 @@ public class IMSession {
                     }
                 })
                 .doOnComplete(() -> {
-                    log.info("IMSession # doOnComplete ! start remove client id={}", this.id);
-                    this.removeClient();
+                    log.info("IMSession # create doOnComplete");
+                    // this.removeClient();
                 })
                 .doOnCancel(() -> {
-                    log.info("IMSession # doOnCancel ! start remove client id={}", this.id);
-                    this.removeClient();
+                    log.info("IMSession # create doOnComplete");
+                    // this.removeClient();
                 })
                 .doOnTerminate(() -> {
-                    log.info("IMSession # doOnTerminate ! start remove client id={}", this.id);
+                    log.info("IMSession # create doOnTerminate");
                     this.removeClient();
                 })
                 .doOnError(err -> log.info("IMSession # doOnError error={}", err.getMessage())).then();
