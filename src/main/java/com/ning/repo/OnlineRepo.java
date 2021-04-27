@@ -49,7 +49,7 @@ public class OnlineRepo {
 
     public String login(String deviceId, String token) {
         String newToken = Md5Utils.stringMD5(token + System.currentTimeMillis());
-        redisTemplate.opsForValue().set(deviceId, newToken, 30 * 100, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(deviceId, newToken, 10, TimeUnit.SECONDS);
         return newToken;
     }
 

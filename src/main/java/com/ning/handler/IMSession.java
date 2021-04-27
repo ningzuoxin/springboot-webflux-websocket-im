@@ -117,9 +117,18 @@ public class IMSession {
                         }
                     }
                 })
-                .doOnComplete(this::removeClient)
-                .doOnCancel(this::removeClient)
-                .doOnTerminate(this::removeClient)
+                .doOnComplete(() -> {
+                    log.info("IMSession # doOnComplete ! start remove client id={}", this.id);
+                    this.removeClient();
+                })
+                .doOnCancel(() -> {
+                    log.info("IMSession # doOnCancel ! start remove client id={}", this.id);
+                    this.removeClient();
+                })
+                .doOnTerminate(() -> {
+                    log.info("IMSession # doOnTerminate ! start remove client id={}", this.id);
+                    this.removeClient();
+                })
                 .doOnError(err -> log.info("IMSession # doOnError error={}", err.getMessage())).then();
         Mono<Void> output = session.send(outSource);
         return Mono.zip(input, output).then();
