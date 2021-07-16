@@ -2,143 +2,104 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
     <title>欢迎进入聊天室~</title>
 </head>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        font-family: '微软雅黑'
-    }
-
-    #container {
-        max-width: 680px;
+    .chat-room-box {
+        width: 480px;
+        height: 520px;
         margin: 0 auto;
-        background: #ffffff;
-        position: relative;
+        border: 2px solid #efefef;
+        background-color: #f1f1f1;
+        border-radius: 5px;
     }
 
-    .header {
-        background: #999999;
-        height: 40px;
-        color: #fff;
-        line-height: 40px;
-        font-size: 20px;
-        padding: 0 10px;
-    }
-
-    .footer {
-        width: 100%;
-        height: 50px;
-        background: #999999;
-        position: fixed;
-        bottom: 0px;
-        right: 0px;
-        padding: 10px;
-    }
-
-    .footer input {
-        width: 75%;
-        height: 45px;
-        outline: none;
-        font-size: 20px;
-        text-indent: 10px;
-        position: absolute;
-        border-radius: 6px;
-        right: 18%;
-    }
-
-    .footer span {
-        display: inline-block;
-        width: 15%;
-        height: 48px;
-        background: #666666;
-        font-weight: 900;
-        line-height: 45px;
-        cursor: pointer;
-        text-align: center;
-        position: absolute;
-        right: 1%;
-        border-radius: 6px;
-    }
-
-    .footer span:hover {
-        color: #fff;
-        background: #666666;
-    }
-
-    .content {
-        font-size: 20px;
-        overflow: auto;
-        padding: 5px 5px 100px 5px;
+    .chat-content-box {
+        height: 75%;
+        border-bottom: 1px solid #efefef;
         overflow-y: scroll;
-        max-height: 80%;
     }
 
-    .content li {
-        margin-top: 10px;
-        padding-left: 10px;
-        display: block;
-        clear: both;
-        overflow: hidden;
+    .chat-send-box-content {
+        width: 99%;
+        height: 90px;
+        border-radius: 5px;
+        border: 1px solid #efefef;
     }
 
-    .name {
-        float: left;
-        padding: 10px;
-        border-radius: 10px;
-        margin-top: 6px;
-        font-style: normal;
-        line-height: 24px;
-        background-color: aliceblue;
+    .chat-content-box-child-left {
+        height: 36px;
+        line-height: 36px;
+        width: 98%;
+        margin: 5px auto 0;
     }
 
-    .msg-content {
-        float: left;
-        padding: 10px;
-        border-radius: 10px;
-        margin: 6px 10px 0 10px;
-        background: #7cfc00;
-        max-width: 72%;
-        border: 1px solid #ccc;
-        box-shadow: 0 0 3px #ccc;
+    .chat-content-box-child-right {
+        height: 36px;
+        line-height: 36px;
+        width: 98%;
+        margin: 5px auto 0;
+        text-align: right;
     }
 
-    .float-right {
-        float: right;
+    .chat-content-box-child-content {
+        background-color: #fff;
+        border-radius: 5px;
+        padding: 5px 5px;
+    }
+
+    .chat-send-box-button {
+        margin-left: 90%;
+    }
+
+    .chat-content-box-child-user-left {
+        font-size: xx-small;
+        margin-right: 5px;
+    }
+
+    .chat-content-box-child-user-right {
+        font-size: xx-small;
+        margin-left: 5px;
     }
 
 </style>
 <body>
-<div id="container">
-    <div class="header">
-        欢迎来到聊天室
-    </div>
-    <ul class="content" id="chat-content-box-1024">
+<h1>你的聊天室ID：[[${id}]]</h1>
+<div style="float: left;">
+    <h4>在线群友</h4>
+    <ul id="onlineChats">
+
     </ul>
-    <div class="footer">
-        <input id="chat-content" type="text" placeholder="说点什么吧...">
-        <span id="btn" onclick="send()">发送</span>
+</div>
+<div class="chat-room-box">
+    <div class="chat-content-box" id="chat-content-box-1024">
+
+    </div>
+    <div class="chat-send-box">
+        <textarea class="chat-send-box-content" style="resize: none;" id="chat-content" autofocus="autofocus">
+
+        </textarea>
+        <button class="chat-send-box-button" onclick="send();" id="sendButton">发送</button>
     </div>
 </div>
+
 </body>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script crossorigin="anonymous"
         integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
         src="https://lib.baomitu.com/jquery/3.5.1/jquery.min.js"></script>
 <script language="javascript" type="text/javascript">
 
     // im 通讯地址
-    let imPath = '';
+    var imPath = '';
     // im token
-    let imToken = '';
+    var imToken = '';
     // websocket
-    let ws;
+    var ws;
 
-    const id = '[[${id}]]'
-    const nonce = '[[${nonce}]]'
-    const authorizationStr = '[[${authorization}]]'
+    var id = '[[${id}]]'
+    var nonce = '[[${nonce}]]'
+    var authorizationStr = '[[${authorization}]]'
 
     function doSend(message) {
         ws.send(message);
@@ -151,7 +112,19 @@
     });
 
     window.onload = function () {
+
+        console.log("id,nonce,authorizationStr", id, nonce, authorizationStr);
+
+        // authorization(authorizationStr, nonce, id).then(res => {
+        //     imPath = res.info.addr;
+        //     imToken = res.info.token;
+        // });
+
+        // console.log("ret", imPath);
+        // console.log("ret", ret.info.addr, ret.info.token);
+
         authorizationAjax(authorizationStr, id, nonce);
+        console.log("imPath,imToken", imToken, imPath);
 
         initWebSocket();
 
@@ -224,6 +197,7 @@
                 XMLHttpRequest.setRequestHeader("Authorization", 'IM ' + authorization);
             },
             success: function (result) {
+                // console.log(result);
                 imPath = result.info.addr;
                 imToken = result.info.token;
             }
@@ -250,7 +224,7 @@
     }
 
     function send() {
-        let content = $("#chat-content").val();
+        var content = $("#chat-content").val();
         content = content.trim();
         if (content != null && content != '') {
             doSend(id + "@" + content);
@@ -262,20 +236,12 @@
     }
 
     function showLeft(content) {
-        const arr = content.split("@");
-        const html = "<li>" +
-            "<i class=\"name\">" + arr[0] + "</i>" +
-            "<span class=\"msg-content\">" + arr[1] + "</span>" +
-            "</li>";
-        $("#chat-content-box-1024").append(html)
+        var arr = content.split("@");
+        $("#chat-content-box-1024").append("<div class='chat-content-box-child-left'><span class='chat-content-box-child-user-left'>" + arr[0] + "</span><span class='chat-content-box-child-content'>" + arr[1] + "</span></div>")
     }
 
     function showRight(content) {
-        const html = "<li>" +
-            "<i class=\"name float-right\">" + id + "</i>" +
-            "<span class=\"msg-content float-right\" style=\"background-color: #ffffff;\">" + content + "</span>" +
-            "</li>";
-        $("#chat-content-box-1024").append(html)
+        $("#chat-content-box-1024").append("<div class='chat-content-box-child-right'><span class='chat-content-box-child-content'>" + content + "</span><span class='chat-content-box-child-user-right'>我</span></div>")
     }
 
     function getOnlineClient() {
@@ -284,6 +250,7 @@
                 url: '/im/online',
                 type: "get",
                 success: function (result) {
+                    // console.log(result);
                     $("#onlineChats").empty();
                     var clients = result.info;
                     var htmlStr = "";
