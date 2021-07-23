@@ -12,6 +12,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,8 +39,8 @@ public class ClusterHandler {
     OnlineRepo onlineRepo;
     SubscribeRepo subscribeRepo;
 
-    private final static String IM_URL = "123.207.93.191:8081";
-//    private final static String IM_URL = "localhost:8081";
+    @Value("${im.url}")
+    private String IM_URL;
 
     @Autowired
     ClusterHandler(OnlineRepo onlineRepo, SubscribeRepo subscribeRepo, RedisTemplate<String, String> redisTemplate) {
@@ -192,7 +193,7 @@ public class ClusterHandler {
     private String FindRestWebSocketServiceAddress() {
         String addr = IM_URL;
         if (StringUtils.isEmpty(addr)) {
-            return "app.foundersc.com/sloth/ws";
+            return "";
         }
         return addr;
     }
