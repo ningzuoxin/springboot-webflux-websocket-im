@@ -1,14 +1,12 @@
 package com.ning.repo;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Lists;
 import com.ning.handler.IMSession;
 import com.ning.utils.Md5Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
@@ -61,48 +59,6 @@ public class OnlineRepo {
             }
         }
         return false;
-    }
-
-    public boolean bindPhoneNo(String deviceId, String phoneId) {
-        log.info("OnlineRepo # bindPhoneNo deviceId={},phoneId={}", deviceId, phoneId);
-        if (deviceId == null) return false;
-        ClientInfo client = clients.get(deviceId);
-        if (client == null) {
-            return false;
-        }
-        client.deviceId = deviceId;
-        client.phoneId = phoneId;
-        return true;
-    }
-
-    public boolean bindCustomNo(String deviceId, String customId) {
-        log.info("OnlineRepo # bindPhoneNo deviceId={},customId={}", deviceId, customId);
-        ClientInfo client = clients.get(deviceId);
-        if (client == null) {
-            return false;
-        }
-        client.deviceId = deviceId;
-        client.customId = customId;
-        return true;
-    }
-
-    // 通过手机号找到匹配的设备id
-    public List<ClientInfo> findDevicesByPhoneId(String phoneId) {
-        if (StringUtils.isEmpty(phoneId)) {
-            return Lists.newArrayList();
-        }
-        Collection<ClientInfo> cs = clients.values();
-        return cs.stream().filter(c -> !StringUtils.isEmpty(c.phoneId) && phoneId.contains(c.phoneId)).collect(Collectors.toList());
-    }
-
-    // 通过客户号找到匹配的设备id
-    public List<ClientInfo> findDevicesByCustomId(String customId) {
-        if (StringUtils.isEmpty(customId)) {
-            return Lists.newArrayList();
-        }
-        Collection<ClientInfo> cs = clients.values();
-        log.info("OnlineRepo # findDevicesByCustomId customId={}", customId);
-        return cs.stream().filter(c -> !StringUtils.isEmpty(c.customId) && customId.contains(c.customId)).collect(Collectors.toList());
     }
 
     /**

@@ -31,7 +31,7 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequestMapping(value = "/im/")
-public class ImController {
+public class ChatRoomController {
 
     @Autowired
     RedisTemplate<String, String> redisTemplate;
@@ -59,7 +59,6 @@ public class ImController {
         model.addAttribute("id", id);
         model.addAttribute("nonce", nonce);
         model.addAttribute("authorization", authorization);
-        log.info("ImController # index ip={},id={},nonce={},authorization={}", ip, id, nonce, authorization);
         return "im_index";
     }
 
@@ -76,7 +75,7 @@ public class ImController {
             id = Utils.URLDecoderParam(id);
             arr = new String[]{URLEncoder.encode(id, "UTF-8"), nonce};
         } catch (UnsupportedEncodingException e) {
-            log.error("ImController # digestAuthorization UnsupportedEncodingException={}", e);
+            log.error("ChatRoomController # digestAuthorization UnsupportedEncodingException={}", e);
         }
 
         Arrays.sort(arr);
@@ -89,7 +88,7 @@ public class ImController {
         try {
             messageDigest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            log.error("ImController # digestAuthorization NoSuchAlgorithmException={}", e);
+            log.error("ChatRoomController # digestAuthorization NoSuchAlgorithmException={}", e);
         }
         byte[] hash = messageDigest.digest(input.toString().getBytes(StandardCharsets.UTF_8));
         String encodeStr = Hex.encodeHexString(hash);

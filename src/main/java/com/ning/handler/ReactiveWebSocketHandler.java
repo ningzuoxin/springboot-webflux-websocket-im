@@ -27,7 +27,6 @@ public class ReactiveWebSocketHandler implements WebSocketHandler {
     @Override
     public @NotNull
     Mono<Void> handle(final @NotNull WebSocketSession webSocketSession) {
-        log.info("ReactiveWebSocketHandler # handle webSocketSession={}", webSocketSession);
         return sessions.handle(webSocketSession);
     }
 

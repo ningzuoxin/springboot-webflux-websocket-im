@@ -6,28 +6,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-@Component
 @Slf4j
-public class ImJob {
+@Component
+public class ChatRoomSchedule {
 
     private final OnlineRepo onlineRepo;
 
     @Autowired
-    public ImJob(OnlineRepo onlineRepo) {
+    public ChatRoomSchedule(OnlineRepo onlineRepo) {
         this.onlineRepo = onlineRepo;
     }
 
-    @Scheduled(fixedRate = 1000 * 100)
+    @Scheduled(fixedRate = 1000 * 60 * 5)
     public void sendPing() {
         long startTime = System.currentTimeMillis();
         onlineRepo.schedule();
-        log.info("ImJob # sendPing job end !!! Duration={} ms !!!", System.currentTimeMillis() - startTime);
+        log.info("ChatRoomSchedule # sendPing end !!! Duration={} ms !!!", System.currentTimeMillis() - startTime);
     }
 
-    @Scheduled(fixedRate = 1000 * 10)
+    @Scheduled(fixedRate = 1000 * 60 * 5)
     public void printClients() {
         int count = onlineRepo.findOnlineClientsCount();
-        log.info("ImJob # printClients online socket client count={}", count);
+        log.info("ChatRoomSchedule # printClients online socket client count={}", count);
         onlineRepo.printClients();
     }
 

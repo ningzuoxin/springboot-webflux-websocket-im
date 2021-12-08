@@ -1,19 +1,15 @@
 package com.ning.handler;
 
-import com.alibaba.fastjson.JSON;
 import com.ning.model.AuthModel;
 import com.ning.model.JsonResponse;
 import com.ning.model.ServerNodeInfo;
 import com.ning.repo.OnlineRepo;
-import com.ning.repo.SubscribeRepo;
 import com.ning.utils.Utils;
 import com.sun.istack.internal.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -30,67 +26,23 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Optional;
 
+@Slf4j
 @Component
 public class ClusterHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClusterHandler.class);
+    @Value("${websocket.url}")
+    private String websocketUrl;
 
-    RedisTemplate<String, String> redisTemplate;
-    OnlineRepo onlineRepo;
-    SubscribeRepo subscribeRepo;
-
-    @Value("${im.url}")
-    private String IM_URL;
+    private final OnlineRepo onlineRepo;
 
     @Autowired
-    ClusterHandler(OnlineRepo onlineRepo, SubscribeRepo subscribeRepo, RedisTemplate<String, String> redisTemplate) {
+    public ClusterHandler(OnlineRepo onlineRepo) {
         this.onlineRepo = onlineRepo;
-        this.redisTemplate = redisTemplate;
-        this.subscribeRepo = subscribeRepo;
     }
 
     public @NotNull
     Mono<ServerResponse> access(ServerRequest request) {
         return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(auth(request));
-    }
-
-    public @NotNull
-    Mono<ServerResponse> subscribe(ServerRequest request) {
-        return request.formData().flatMap(map -> {
-            String business = map.getFirst("business");
-            String deviceId = map.getFirst("device");
-            subscribeRepo.subscribe(business, deviceId);
-            return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue("subscribe");
-        });
-    }
-
-    public @NotNull
-    Mono<ServerResponse> unSubscribe(ServerRequest request) {
-        return request.formData().flatMap(map -> {
-            String business = map.getFirst("business");
-            String deviceId = map.getFirst("device");
-            subscribeRepo.unsubscribe(business, deviceId);
-            return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue("unSubscribe");
-        });
-    }
-
-    public @NotNull
-    Mono<ServerResponse> createSubscribe(ServerRequest request) {
-        return request.formData().flatMap(map -> {
-            String business = map.getFirst("business");
-            String ttl = map.getFirst("ttl");
-            subscribeRepo.createBusinessSubscribe(business, ttl);
-            return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue("createSubscribe");
-        });
-    }
-
-    public @NotNull
-    Mono<ServerResponse> destroySubscribe(ServerRequest request) {
-        return request.formData().flatMap(map -> {
-            String business = map.getFirst("business");
-            subscribeRepo.destroyBusinessSubscribe(business);
-            return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue("destroySubscribe");
-        });
     }
 
     /**
@@ -103,7 +55,6 @@ public class ClusterHandler {
      */
     private JsonResponse auth(ServerRequest request) {
         String Authorization = request.headers().firstHeader("Authorization");
-        logger.info("ClusterHandler # auth Authorization={}", Authorization);
 
         if (Authorization == null) {
             return JsonResponse.failure(HttpStatus.UNAUTHORIZED.value(), "No Authorization Info");
@@ -134,13 +85,12 @@ public class ClusterHandler {
         if (Authorization.equals(authModel.getAuthorization())) {
             String token = onlineRepo.login(authModel.getDeviceId(), authModel.getAuthorization());
             ServerNodeInfo info = new ServerNodeInfo();
-            info.addr = "ws://" + FindRestWebSocketServiceAddress() + "/c";
+            info.addr = "ws://" + findRestWebSocketServiceAddress() + "/c";
             info.token = token;
-            logger.info("ClusterHandler # auth success ServerNodeInfo={}", JSON.toJSONString(info));
             return JsonResponse.success().addInfo(info);
         }
 
-        logger.error("ClusterHandler Authorization failed, param Authorization={},deviceId={},nonce={}", Authorization, deviceIdStr, nonceStr);
+        log.error("ClusterHandler Authorization failed, param Authorization={},deviceId={},nonce={}", Authorization, deviceIdStr, nonceStr);
         return JsonResponse.failure(HttpStatus.UNAUTHORIZED.value(), "Authorization failed by IM Server");
     }
 
@@ -152,7 +102,6 @@ public class ClusterHandler {
      * @return
      */
     private AuthModel authByDeviceIdAndNonce(String deviceId, String nonce) {
-        logger.info("ClusterHandler # authByDeviceIdAndNonce deviceId={}", deviceId);
         AuthModel authModel = new AuthModel();
         if (deviceId.contains("%")) {
             authModel.setDeviceId(Utils.URLDecoderParam(deviceId));
@@ -166,7 +115,7 @@ public class ClusterHandler {
             try {
                 arr = new String[]{URLEncoder.encode(authModel.getDeviceId(), "UTF-8"), nonce};
             } catch (UnsupportedEncodingException e) {
-                logger.error("ClusterHandler # authByDeviceIdAndNonce UnsupportedEncodingException={}", e.getMessage());
+                log.error("ClusterHandler # authByDeviceIdAndNonce UnsupportedEncodingException={}", e.getMessage());
             }
 
             Arrays.sort(arr);
@@ -183,18 +132,18 @@ public class ClusterHandler {
                 authModel.setAuthorization(encodeStr);
                 return authModel;
             } catch (NoSuchAlgorithmException e) {
-                logger.error("ClusterHandler # authByDeviceIdAndNonce NoSuchAlgorithmException={}", e.getMessage());
+                log.error("ClusterHandler # authByDeviceIdAndNonce NoSuchAlgorithmException={}", e.getMessage());
                 e.printStackTrace();
             }
         }
         return authModel;
     }
 
-    private String FindRestWebSocketServiceAddress() {
-        String addr = IM_URL;
-        if (StringUtils.isEmpty(addr)) {
+    private String findRestWebSocketServiceAddress() {
+        String address = websocketUrl;
+        if (StringUtils.isEmpty(address)) {
             return "";
         }
-        return addr;
+        return address;
     }
 }

@@ -1,7 +1,6 @@
 package com.ning.handler;
 
 import com.alibaba.fastjson.JSON;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.ning.message.ClientMessage;
 import com.ning.repo.OnlineRepo;
 import com.ning.utils.Utils;
@@ -41,7 +40,6 @@ public class IMSession {
 
     public boolean auth() {
         String query = session.getHandshakeInfo().getUri().getQuery();
-        log.info("IMSession # auth query={}", query);
 
         Map<String, String> params = Utils.getParamsFromQueryUrl(query);
         String id = params.get("id");
@@ -57,7 +55,6 @@ public class IMSession {
 
         this.id = Utils.URLDecoderParam(id);
         token = Utils.URLDecoderParam(token);
-        log.info("IMSession # auth id={},token={}", this.id, token);
 
         this.isActive = new AtomicBoolean(false);
         this.isConnected = new AtomicBoolean(false);
@@ -73,70 +70,23 @@ public class IMSession {
         Flux<WebSocketMessage> outSource = emitterProcessor.map(data -> data);
         Mono<Void> input = session.receive()
                 .doOnSubscribe(s -> {
-                    log.info("IMSession # create doOnSubscribe={}", s);
                 })
                 .doOnRequest(r -> {
-                    log.info("IMSession # create doOnRequest");
                 })
                 .doOnNext(message -> {
                     log.info("IMSession # create doOnNext={}", message);
                     if (message.getType() == WebSocketMessage.Type.TEXT) {
-                        if (env.equals("dev") || env.equals("test")) {
-                            // Echo Test
-                            sendTestMessageToAllOnlineClient(message.getPayloadAsText());
-                            // sendTestMessageToClient(message.getPayloadAsText());
-                            // sendMessageToClient(message.getPayloadAsText(), -1);
-                        } else {
-                            closeMe(CloseStatus.BAD_DATA.withReason("not accept text message"));
-                        }
-                    } else if (message.getType() == WebSocketMessage.Type.BINARY) {
-                        ByteBuffer buffer = message.getPayload().asByteBuffer();
-                        byte[] bytes = new byte[buffer.remaining()];
-                        buffer.get(bytes, 0, bytes.length);
-                        ClientMessage.Message msg = null;
-                        try {
-                            msg = ClientMessage.Message.parseFrom(bytes);
-                        } catch (InvalidProtocolBufferException e) {
-                            System.out.println(e.getMessage());
-                            e.printStackTrace();
-                        }
-                        if (msg != null) {
-                            switch (msg.getType()) {
-                                case BIND_PHONE_NO: // 手机号登录绑定
-                                    if (onlineRepo.bindPhoneNo(id, msg.getPayload())) {
-                                        sendMessageToClient(ClientMessage.Type.BIND_PHONE_NO.toString(), 1, ClientMessage.Type.COMMAND);
-                                    } else {
-                                        sendMessageToClient(ClientMessage.Type.BIND_PHONE_NO.toString(), 0, ClientMessage.Type.COMMAND);
-                                    }
-                                    break;
-                                case BIND_CUSTOM_NO: // 客户号登录绑定
-                                    if (onlineRepo.bindCustomNo(id, msg.getPayload())) {
-                                        sendMessageToClient(ClientMessage.Type.BIND_CUSTOM_NO.toString(), 1, ClientMessage.Type.COMMAND);
-                                    } else {
-                                        sendMessageToClient(ClientMessage.Type.BIND_CUSTOM_NO.toString(), 0, ClientMessage.Type.COMMAND);
-                                    }
-                                    break;
-                                case COMMAND:
-                                    break;
-                                default:
-                                    closeMe(CloseStatus.NOT_ACCEPTABLE.withReason("closed by service because type not accept"));
-                            }
-                        }
+                        sendTestMessageToAllOnlineClient(message.getPayloadAsText());
                     }
                 })
                 .doOnComplete(() -> {
-                    log.info("IMSession # create doOnComplete");
-                    // this.removeClient();
                 })
                 .doOnCancel(() -> {
-                    log.info("IMSession # create doOnComplete");
-                    // this.removeClient();
                 })
                 .doOnTerminate(() -> {
-                    log.info("IMSession # create doOnTerminate");
                     this.removeClient();
                 })
-                .doOnError(err -> log.info("IMSession # doOnError error={}", err.getMessage())).then();
+                .doOnError(err -> log.error("IMSession # doOnError error={}", err.getMessage())).then();
         Mono<Void> output = session.send(outSource);
         return Mono.zip(input, output).then();
     }
@@ -164,10 +114,6 @@ public class IMSession {
         }
     }
 
-    public void sendMessageToClient(String payload, int business) {
-        sendMessageToClient(payload, business, ClientMessage.Type.BUSINESS);
-    }
-
     public void sendMessageToClient(String payload, int business, ClientMessage.Type type) {
         String p = "";
         if (payload != null) {
@@ -186,14 +132,6 @@ public class IMSession {
 
     public void sendTestMessageToClient(String message) {
         emitterProcessor.onNext(session.textMessage(message));
-    }
-
-    public void sendCloseMessage() {
-        sendMessageToClient("", 0, ClientMessage.Type.CLOSE);
-    }
-
-    public void forceCloseSession() {
-        closeMe(CloseStatus.GOING_AWAY.withReason("don't reconnect me"));
     }
 
     public void sendPing() {

@@ -15,7 +15,7 @@ public class ReactiveSessions {
     private final String env;
 
     @Autowired
-    ReactiveSessions(OnlineRepo onlineRepo) {
+    public ReactiveSessions(OnlineRepo onlineRepo) {
         this.onlineRepo = onlineRepo;
         this.env = PropertiesUtil.getProperties("application.properties").getProperty("environment");
     }

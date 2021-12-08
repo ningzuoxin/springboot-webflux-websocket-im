@@ -18,7 +18,8 @@ public class ReactiveWebSocketConfiguration {
     @Qualifier("ReactiveWebSocketHandler")
     private final WebSocketHandler webSocketHandler;
 
-    ReactiveWebSocketConfiguration(@Autowired WebSocketHandler webSocketHandler) {
+    @Autowired
+    public ReactiveWebSocketConfiguration(WebSocketHandler webSocketHandler) {
         this.webSocketHandler = webSocketHandler;
     }
 

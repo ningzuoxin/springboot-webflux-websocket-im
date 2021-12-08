@@ -19,28 +19,4 @@ public class RouterConfig {
                 .and(RequestPredicates.accept(MediaType.TEXT_PLAIN)), handler::access);
     }
 
-    @Bean
-    public RouterFunction<ServerResponse> routerSubscribe(ClusterHandler handler) {
-        return route(RequestPredicates.POST("/sloth/im/temporary/subscribe")
-                .and(RequestPredicates.accept(MediaType.APPLICATION_FORM_URLENCODED)), handler::subscribe);
-    }
-
-    @Bean
-    public RouterFunction<ServerResponse> routerUnsubscribe(ClusterHandler handler) {
-        return route(RequestPredicates.POST("/sloth/im/temporary/unsubscribe")
-                .and(RequestPredicates.accept(MediaType.APPLICATION_FORM_URLENCODED)), handler::unSubscribe);
-    }
-
-    @Bean
-    public RouterFunction<ServerResponse> routerCreateSubscribe(ClusterHandler handler) {
-        return route(RequestPredicates.POST("/sloth/im/temporary/create")
-                .and(RequestPredicates.accept(MediaType.APPLICATION_FORM_URLENCODED)), handler::createSubscribe);
-    }
-
-    @Bean
-    public RouterFunction<ServerResponse> routerDestroyUnsubscribe(ClusterHandler handler) {
-        return route(RequestPredicates.POST("/sloth/im/temporary/destroy")
-                .and(RequestPredicates.accept(MediaType.APPLICATION_FORM_URLENCODED)), handler::destroySubscribe);
-    }
-
 }

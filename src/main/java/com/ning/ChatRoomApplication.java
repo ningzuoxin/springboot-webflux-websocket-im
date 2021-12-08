@@ -8,11 +8,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Slf4j
 @SpringBootApplication
 @EnableScheduling
-public class ImApplication {
+public class ChatRoomApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ImApplication.class, args);
-        log.info("springboot-webflux-websocket-im application start success !!!");
+        SpringApplication.run(ChatRoomApplication.class, args);
+        log.info("chat room application start success !!!");
     }
 
 }
