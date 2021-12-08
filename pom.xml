@@ -80,6 +80,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>templates/**</include>
+                    <include>protoc/**</include>
                     <include>application*.properties</include>
                 </includes>
             </resource>

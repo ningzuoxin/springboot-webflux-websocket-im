@@ -1,6 +1,5 @@
 package com.ning.handler;
 
-import com.alibaba.fastjson.JSON;
 import com.ning.message.ClientMessage;
 import com.ning.repo.OnlineRepo;
 import com.ning.utils.Utils;
@@ -13,7 +12,6 @@ import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -74,7 +72,6 @@ public class IMSession {
                 .doOnRequest(r -> {
                 })
                 .doOnNext(message -> {
-                    log.info("IMSession # create doOnNext={}", message);
                     if (message.getType() == WebSocketMessage.Type.TEXT) {
                         sendTestMessageToAllOnlineClient(message.getPayloadAsText());
                     }
@@ -83,9 +80,7 @@ public class IMSession {
                 })
                 .doOnCancel(() -> {
                 })
-                .doOnTerminate(() -> {
-                    this.removeClient();
-                })
+                .doOnTerminate(() -> this.removeClient())
                 .doOnError(err -> log.error("IMSession # doOnError error={}", err.getMessage())).then();
         Mono<Void> output = session.send(outSource);
         return Mono.zip(input, output).then();
@@ -146,7 +141,6 @@ public class IMSession {
      */
     public void sendTestMessageToAllOnlineClient(String message) {
         onlineRepo.findTerminalClients("0").forEach(client -> {
-            log.info("IMSession # sendTestMessageToAllOnlineClient client={}", JSON.toJSONString(client));
             String sessionId = client.session.id;
             if (!id.equals(sessionId)) {
                 client.session.sendTestMessageToClient(message);

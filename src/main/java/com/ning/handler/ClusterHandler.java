@@ -40,8 +40,8 @@ public class ClusterHandler {
         this.onlineRepo = onlineRepo;
     }
 
-    public @NotNull
-    Mono<ServerResponse> access(ServerRequest request) {
+    @NotNull
+    public Mono<ServerResponse> access(ServerRequest request) {
         return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(auth(request));
     }
 
@@ -59,6 +59,7 @@ public class ClusterHandler {
         if (Authorization == null) {
             return JsonResponse.failure(HttpStatus.UNAUTHORIZED.value(), "No Authorization Info");
         }
+
         String[] auth = Authorization.split(" "); // IM c570b50e454f708b79da589dbcd2920b8fe5e4
         if (auth.length == 2) {
             if (auth[0].equals("IM")) {
@@ -69,6 +70,7 @@ public class ClusterHandler {
         } else {
             return JsonResponse.failure(HttpStatus.UNAUTHORIZED.value(), "Authorization failed by Auth length");
         }
+
         Optional<String> deviceId = request.queryParam("u");
         Optional<String> nonce = request.queryParam("n");
 
